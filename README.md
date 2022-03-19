@@ -198,21 +198,108 @@ Select Upload a template file and choose the ecs.yml file from the GitHub projec
 
 ![f](https://user-images.githubusercontent.com/91766546/159133364-0861e932-2ee6-4fa2-b28d-1f05452f75a9.png)
 
+For the stack name, enter BreakTheMonolith-Demo. Verify that the other parameters have the following values:
+              1. Desired Capacity = *2*
+              2. InstanceType = *t2.micro*
+              3. MaxSize = *2*
 
 ![ff](https://user-images.githubusercontent.com/91766546/159133486-05bc991e-abdb-4b0c-998c-48ac4b2f3795.png)
 
 ![fff](https://user-images.githubusercontent.com/91766546/159133497-bf57801b-c230-4293-b354-49d5d0e20196.png)
 
+On the Configure stack options page, keep the default options and scroll down and select Next.
+
 ![ffff](https://user-images.githubusercontent.com/91766546/159133505-21339514-0d48-4543-8de3-0da50f24fe59.png)
 
 ![fffff](https://user-images.githubusercontent.com/91766546/159133514-b6ca8688-cd29-41e6-b210-b79f3528a5f5.png)
+
+On the Review BreakTheMonolith-Demo page scroll to the bottom of the page, acknowledge the Capabilities statement by selecting the checkbox, and select Create stack.
 
 ![Screenshot from 2022-03-11 22-10-36](https://user-images.githubusercontent.com/91766546/159133617-e33eaf01-80a5-4db2-a815-0f45be901e6d.png)
 
 ![Screenshot from 2022-03-11 22-10-48](https://user-images.githubusercontent.com/91766546/159133652-b31008af-c04f-4e6f-b2bd-d4eb2bc8668b.png)
 
+You will see your stack with the status CREATE_IN_PROGRESS. You can select the refresh button at the top right of the screen to check on the progress. This process typically takes under 5 minutes.
+
 ![p8](https://user-images.githubusercontent.com/91766546/159133547-09b78824-0ac2-480d-9cab-3fedbc0244d2.png)
 
 
-![Screenshot from 2022-03-11 22-16-25](https://user-images.githubusercontent.com/91766546/159133664-b8da9b39-15b6-4b0b-ab26-50d85cc52bfb.png)
+**Step 2. Check your Cluster is Running**
+
+Navigate to the [Amazon ECS console](https://console.aws.amazon.com/ecs/home?).Your cluster should appear in the list.
+
+![Screenshot from 2022-03-11 22-16-25](https://user-images.githubusercontent.com/91766546/159139086-fb246584-f1fa-4829-bc8b-350cb3cf1801.png)
+
+Select the cluster BreakTheMonolith-Demo, then select the Tasks tab to verify that there are no tasks running.
+
+![h](https://user-images.githubusercontent.com/91766546/159139182-e6e13d2f-0f83-4645-a184-e60f777db692.png)
+
+Select the ECS Instances tab to verify there are two Amazon EC2 instances created by the AWS CloudFormation template.
+
+![hh](https://user-images.githubusercontent.com/91766546/159139220-f48b0543-dcd0-4706-a258-1962fda91d7a.png)
+
+- From the Amazon ECS left navigation menu, select "Task Definitions". Then, select **Create new Task Definition**.
+
+![hhh](https://user-images.githubusercontent.com/91766546/159139318-6845f94d-eeae-46f3-87fe-842c15880ce2.png)
+
+On the "Select launch type compatibility" page, select the "EC2" option then select "Next step".
+
+![hhhh](https://user-images.githubusercontent.com/91766546/159139493-a36a4add-29bf-4f50-bc64-d15d998c9fe0.png)
+
+On the "Configure task and container definitions" page, in the "Task Definition Name" field, enter *api*.
+  
+![hhhhh](https://user-images.githubusercontent.com/91766546/159139981-a33db207-f911-4aa8-a328-2559e7913157.png)
+
+ Scroll down to "Container Definitions" and select "Add container".
+
+![hhhhhh](https://user-images.githubusercontent.com/91766546/159140017-5eb0e16e-bc66-4b27-8434-520ef24d203b.png)
+
+- In the **Add container** window:
+        - In the **Container name** field, enter *api*. In the **Image** field, enter *[account-ID].dkr.ecr.[region].amazonaws.com/api:v1*Replace *[account-ID]* and *[region]* with your specific information. Ensure the tag matches the value you used in Module 1 to tag and push the image. This is the URL of your ECR repository image that was created in the previous module. In the **Memory Limits** field, verify **Hard limit** is selected and enter *256* as the value. Next, under **Port mappings**, Host port = *0* and Container port = *3000*.      
+        - 
+![i](https://user-images.githubusercontent.com/91766546/159140700-43baf2f6-6b55-4f71-b306-6ec154dfe339.png)   
+
+Scroll to **ENVIRONMENT**, CPU units = *256*. Select **Add**.You will return to the **Configure task and container definitions** page.
+
+![ii](https://user-images.githubusercontent.com/91766546/159140764-e1b9556b-1311-43e7-a46f-7dd83dbf91c2.png)
+
+Scroll to the bottom of the page and select **Create**.
+
+![iii](https://user-images.githubusercontent.com/91766546/159140794-65bbda10-4fa9-45e9-846d-c39b58b65463.png)
+
+![iiii](https://user-images.githubusercontent.com/91766546/159140798-de7f68a2-698b-4242-b0c0-a3762826f473.png)
+
+Your Task Definition is listed in the console.
+
+![k](https://user-images.githubusercontent.com/91766546/159140984-37b1bc13-c540-4050-8b6d-4bcfefe4b91c.png)
+
+![kk](https://user-images.githubusercontent.com/91766546/159140989-542b8773-1e91-49d1-be25-2cbb2a22f525.png)
+
+The [Application Load Balancer (ALB)](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html) lets your service accept incoming traffic. The ALB automatically routes traffic to container instances running on your cluster using them as a [target group](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html).
+
+**Check your VPC Name:** If this is not your first time using this AWS account, you may have multiple VPCs. It is important to configure your Target Group with the correct VPC.
+
+- Navigate to the [Load Balancer section of the EC2 Console](https://console.aws.amazon.com/ec2/v2/home?#LoadBalancers:).
+- Locate the Load Balancer named **demo**.
+- Select the checkbox next to **demo** to see the Load Balancer details.
+- In the **Description** tab, locate the **VPC** attribute (in this format: vpc-xxxxxxxxxxxxxxxxx). **Note:** You will need the VPC attribute in the next step when you configure the ALB target group.
+
+![j](https://user-images.githubusercontent.com/91766546/159141095-4dc8f2e0-1c49-4715-9a6f-9c8b2b33630b.png)
+
+Configure the ALB Target Group
+
+Navigate to the Target Group section of the EC2 Console. Select **Create target group**.
+
+![jj](https://user-images.githubusercontent.com/91766546/159141176-c625207b-4f20-4084-8d6d-8fb0c51b0442.png)
+
+Configure the following Target Group parameters (for the parameters not listed below, keep the default values):
+    - For the **Target group name**, enter *api*.
+
+![jjj](https://user-images.githubusercontent.com/91766546/159141243-39b61a1b-261c-45f4-a52e-4767f343042d.png)
+
+    - For the **Protocol**, select **HTTP**.
+    - For the **Port**, enter *80*.
+    - For the VPC, select the value that matches the one from the Load Balancer description.
+    
+![jjjj](https://user-images.githubusercontent.com/91766546/159141265-efef2d22-991f-454a-becc-16cc7a93f1ad.png)
 
