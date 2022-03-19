@@ -187,3 +187,32 @@ Follow the step-by-step instructions below to deploy the node.js application usi
 Create an Amazon ECS cluster deployed behind an Application Load Balancer.
 
 1. Navigate to the [AWS CloudFormation console](https://console.aws.amazon.com/cloudformation/home).
+
+![Screenshot from 2022-03-11 22-04-57](https://user-images.githubusercontent.com/91766546/159133229-00bea052-cb8e-4062-a2db-e4b087f516d9.png)
+
+![Screenshot from 2022-03-11 22-05-43](https://user-images.githubusercontent.com/91766546/159133299-33a7588f-60c0-47a6-a9f0-e33b73d89025.png)
+
+Select Upload a template file and choose the ecs.yml file from the GitHub project at amazon-ecs-nodejs-microservice/2-containerized/infrastructure/ecs.yml then select Next.
+
+![p6](https://user-images.githubusercontent.com/91766546/159133401-77732836-b4cc-41d8-977c-e973b8025633.png)
+
+![f](https://user-images.githubusercontent.com/91766546/159133364-0861e932-2ee6-4fa2-b28d-1f05452f75a9.png)
+
+
+![ff](https://user-images.githubusercontent.com/91766546/159133486-05bc991e-abdb-4b0c-998c-48ac4b2f3795.png)
+
+![fff](https://user-images.githubusercontent.com/91766546/159133497-bf57801b-c230-4293-b354-49d5d0e20196.png)
+
+![ffff](https://user-images.githubusercontent.com/91766546/159133505-21339514-0d48-4543-8de3-0da50f24fe59.png)
+
+![fffff](https://user-images.githubusercontent.com/91766546/159133514-b6ca8688-cd29-41e6-b210-b79f3528a5f5.png)
+
+![Screenshot from 2022-03-11 22-10-36](https://user-images.githubusercontent.com/91766546/159133617-e33eaf01-80a5-4db2-a815-0f45be901e6d.png)
+
+![Screenshot from 2022-03-11 22-10-48](https://user-images.githubusercontent.com/91766546/159133652-b31008af-c04f-4e6f-b2bd-d4eb2bc8668b.png)
+
+![p8](https://user-images.githubusercontent.com/91766546/159133547-09b78824-0ac2-480d-9cab-3fedbc0244d2.png)
+
+
+![Screenshot from 2022-03-11 22-16-25](https://user-images.githubusercontent.com/91766546/159133664-b8da9b39-15b6-4b0b-ab26-50d85cc52bfb.png)
+
