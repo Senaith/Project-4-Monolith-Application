@@ -303,3 +303,27 @@ Configure the following Target Group parameters (for the parameters not listed b
     
 ![jjjj](https://user-images.githubusercontent.com/91766546/159141265-efef2d22-991f-454a-becc-16cc7a93f1ad.png)
 
+- Access the **Advanced health check settings** and edit the following parameters as needed:
+    - For **Healthy threshold**, enter *2*.
+    - For **Unhealthy threshold**, enter *2*.
+    - For **Timeout**, enter *5*.
+    - For **Interval**, enter *6*.
+- Select **Create**.
+
+![jjjjj](https://user-images.githubusercontent.com/91766546/159141312-88236455-eec3-44f9-a1b5-9303464d8603.png)
+
+![jjjjjj](https://user-images.githubusercontent.com/91766546/159141333-c9ae5dbd-e380-4f02-885d-3f9e61f3d19a.png)
+
+![jjjjjjj](https://user-images.githubusercontent.com/91766546/159141347-d69ffc54-28f2-48bb-b057-77bcfaad5a9a.png)
+
+
+The ALB listener checks for incoming connection requests to your ALB.
+
+Add a Listener to the ALB
+
+Navigate to the Load Balancer section of the EC2 Console.
+
+![ll](https://user-images.githubusercontent.com/91766546/159141391-8c7b4062-8926-4833-9e11-4aee32361d7e.png)
+
+
+![l](https://user-images.githubusercontent.com/91766546/159141370-4e380d9e-fb6f-49bd-92d0-8da037d39215.png)
