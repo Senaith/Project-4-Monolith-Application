@@ -452,3 +452,301 @@ Let's create repository for each service in Amazon ECR.
 
 ![www](https://user-images.githubusercontent.com/91766546/159164336-4af24616-58ec-4502-ba15-f2ab7c5c3faf.png)
 
+
+You will need access to Docker to build and push the images for each service. If you are working on this project at different points in time, you may have been logged out of Docker. If this is the case, take the following steps to log into Docker again.
+
+- Run *$(aws ecr get-login --no-include-email --region [your-region])*Replace *[your-region]*, for example: *$(aws ecr get-login --no-include-email --region us-west-2)*
+
+If the authentication was successful, you will receive the confirmation message: **Login Succeeded**.
+
+![q](https://user-images.githubusercontent.com/91766546/159166447-20168c86-80bf-4df6-8003-c432b77d25c3.png)
+
+In the project folder **amazon-ecs-nodejs-microservices/3-microservices/services**, you will have folders with files for each service. Notice how each microservice is essentially a clone of the previous monolithic service.
+
+You can see how each service is now specialized by comparing the file **db.json** in each service and in the monolithic api service. Previously posts, threads, and users were all stored in a single database file. Now, each is stored in the database file for its respective service.
+
+Open your terminal, and set your path to *~/amazon-ecs-nodejs-microservices/3-microservices/services*
+
+![qq](https://user-images.githubusercontent.com/91766546/159166469-ee620539-99df-4c86-a4a8-91fb1f9ca5e5.png)
+
+**Build and Tag Each Image**
+
+- In the terminal, run *docker build -t [service-name] ./[service-name]*Replace the *[service-name]*, for example: *docker build -t posts ./posts*
+- After the build completes, tag the image so you can push it to the repository:*docker tag [service-name]:latest [account-ID].dkr.ecr.[region].amazonaws.com/[service-name]:v1*Replace *[service-name]*, *[account-ID]*, and *[region]*, for example: *docker tag posts:latest [account-id].dkr.ecr.us-west-2.amazonaws.com/posts:v1*
+- Push your image to ECR: docker push [account-id].dkr.ecr.[region].amazonaws.com/[service-name]:v1Replace *[service-name]*, *[account-ID]*, and *[region]*.
+
+If you navigate to your ECR repository, you should see your images tagged with v1.
+
+Repeat these steps for each microservice image.
+
+**NOTE:** Be sure to build and tag all three images.
+
+![qqq](https://user-images.githubusercontent.com/91766546/159166488-06fc3854-1469-452c-b239-fdc79e233246.png)
+
+![qqqq](https://user-images.githubusercontent.com/91766546/159166574-571dcf97-e9a6-48d3-9caa-55decf750ce0.png)
+
+![qqqqq](https://user-images.githubusercontent.com/91766546/159166598-ccb83211-bef6-4abf-ad23-85ce06813ab5.png)
+
+![qqqqqq](https://user-images.githubusercontent.com/91766546/159166603-6ab068f0-4d3f-4ffd-ba7d-a5e8a5ce96af.png)
+
+![qqqqqqq](https://user-images.githubusercontent.com/91766546/159166610-009a91a8-8679-4074-82bd-b5545bb0d696.png)
+
+![qqqqqqqq](https://user-images.githubusercontent.com/91766546/159166616-791686ca-1127-4abd-a718-f51bad2160f2.png)
+
+## Module 4 - Deploy Microservices
+
+In this module, I will deploy the node.js application as a set of interconnected services behind an Application Load Balancer (ALB). Then, I will use the ALB to seamlessly shift traffic from the monolith to the microservices. 
+
+### Architecture Overview
+
+This architecture will deploy the microservices and safely transition the application's traffic away from the monolith.
+
+![s](https://user-images.githubusercontent.com/91766546/159166793-27c2c320-f93d-4700-84dd-d47784cc0306.png)
+
+1. Switch the Traffic This is the starting configuration. The monolithic node.js app running in a container on Amazon ECS.
+2. Start Microservices Using the three container images you built and pushed to Amazon ECR in the previous module, you will start up three microservices on your existing Amazon ECS cluster.
+3. Configure the Target Groups Like in Module 2, you will add a target group for each service and update the ALB Rules to connect the new microservices.
+4. Shut Down the Monolith By changing one rule in the ALB, you will start routing traffic to the running microservices. After traffic reroute has been verified, shut down the monolith.
+
+he step-by-step instructions below will deploy the microservices.
+
+I will deploy three new services to the cluster that I launched in Module 2. Like Module 2, I will write Task Definitions for each service.
+
+To speed things up, in this next step I will create task definitions for each service (users, threads, posts) from the Amazon ECS console by writing them as JSON.
+
+Here is the JSON template:
+
+![q1](https://user-images.githubusercontent.com/91766546/159175762-3e03ab7e-9d12-4bdd-85cd-03215cb6b77a.png)
+Follow these steps below:
+
+From the Amazon Container Services console, under Amazon ECS, select Task definitions.
+
+In the Task Definitions page, select the Create new Task Definition button.
+
+In the Select launch type compatibility page, select the EC2 option and then select Next step.
+
+In the Configure task and container definitions page, scroll to the Volumes section and select the Configure via JSON button.
+
+Copy and paste the following code snippet into the JSON field, replacing the existing code.Remember to replace the [service-name], [account-ID], [region], and [tag] placeholders.
+
+![ss](https://user-images.githubusercontent.com/91766546/159176556-42322ce7-2d6f-4e78-8cf8-2a4d9e0e4eae.png)
+![sss](https://user-images.githubusercontent.com/91766546/159176566-6682ad87-fd1c-4045-9f1c-cf1ac769ef9a.png)
+![ssss](https://user-images.githubusercontent.com/91766546/159176570-8f5c3e10-e3bd-4e1a-9712-c6f219485749.png)
+![sssss](https://user-images.githubusercontent.com/91766546/159176576-6a28ecf1-92a4-4594-a390-6bcd49dde092.png)
+![ssssss](https://user-images.githubusercontent.com/91766546/159176581-72f3c8d2-f24c-467e-9255-fa0717204c26.png)
+![sssssss](https://user-images.githubusercontent.com/91766546/159176587-4e28be54-395d-40b6-8c99-e34ede9dd3b3.png)
+![ssssssss](https://user-images.githubusercontent.com/91766546/159176610-e5b0b214-71d5-4b6f-b3a0-682d4fdce015.png)
+![sssssssss](https://user-images.githubusercontent.com/91766546/159176612-09b9b226-cb80-4090-83f9-0b3152f03a40.png)
+![ssssssssss](https://user-images.githubusercontent.com/91766546/159176618-1b4e2158-b563-4b83-81f1-0f869cda7cfe.png)
+![sssssssssss](https://user-images.githubusercontent.com/91766546/159176622-8328b8cc-bdca-4d72-8026-976b189c6cb9.png)
+![ssssssssssss](https://user-images.githubusercontent.com/91766546/159176624-2e89df98-e747-4244-a424-bfb08deb3b33.png)
+
+As in Module 2, configure a target group for each service (posts, threads, and users). A target group allows traffic to correctly reach a specified service. I will configure the target groups using AWS CLI. However, before proceeding, ensure the correct VPC name that is being used for this project:
+
+Navigate to the Load Balancer section of the EC2 Console.
+Select the checkbox next to demo, select the Description tab, and locate the VPC attribute (in this format: vpc-xxxxxxxxxxxxxxxxx). Note: You will need the VPC attribute when you configure the target groups.
+
+![r0](https://user-images.githubusercontent.com/91766546/159177040-2d6ac6f0-88db-4a5e-a87d-ac29709ac454.png)
+
+![r](https://user-images.githubusercontent.com/91766546/159177054-ae57346c-e8a3-4f98-8368-bfd73c80c0e1.png)
+
+![r1](https://user-images.githubusercontent.com/91766546/159177061-dd1db34d-7996-4123-86a8-1e69954dd340.png)
+
+![rr](https://user-images.githubusercontent.com/91766546/159177068-25317945-7683-4a48-b51c-ed10f8f7b889.png)
+
+![rrr](https://user-images.githubusercontent.com/91766546/159177074-b030337a-7716-43d5-b39a-8fe02977403e.png)
+
+![rrrr](https://user-images.githubusercontent.com/91766546/159177078-97052407-2e9c-40f2-8d6f-3a6840fbaea3.png)
+
+The [listener](http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html) checks for incoming connection requests to your ALB in order to route traffic appropriately.
+
+Right now, all four of your services (monolith and your three microservices) are running behind the same load balancer. To make the transition from monolith to microservices, you will start routing traffic to your microservices and stop routing traffic to your monolith.
+
+**Access the listener rules**
+
+- Navigate to the [Load Balancer section of the EC2 Console](https://console.aws.amazon.com/ec2/v2/home?#LoadBalancers:).
+- Locate the Load Balancer named **demo** and select the checkbox next to it to see the Load Balancer details.
+- Select the **Listeners** tab.
+
+![rrrrr](https://user-images.githubusercontent.com/91766546/159177086-b18ed22f-243b-4369-a771-96b36dc203af.png)
+
+There should only be one listener listed in this tab. Take the following steps to edit the listener rules:
+
+- Under the **Rules** column, select **View/edit rules**.
+- On the **Rules** page, select the plus (**+**) button.The option to **Insert Rule** appears on the page.
+- Use the following rule template to insert the necessary rules which include one to maintain traffic to the monolith and one for each microservice:
+    - IF Path = /api/[service-name]* THEN Forward to [service-name]For example: IF Path = /api/posts* THEN Forward to posts
+    - Insert the rules in the following order:
+        - api: */api** forwards to *api*
+        - users: */api/users** forwards to *users*
+        - threads: */api/threads** forwards to *threads*
+        - posts: */api/posts** forwards to *posts*
+- Select **Save**.
+- Select the back arrow at the top left corner of the page to return to the load balancer console.
+![t](https://user-images.githubusercontent.com/91766546/159177400-02e448d2-e980-476a-8cdb-3a6ee3335f52.png)
+
+![tt](https://user-images.githubusercontent.com/91766546/159177408-4463dcd5-88d9-4a00-a541-989a67ed267b.png)
+
+![ttt](https://user-images.githubusercontent.com/91766546/159177410-094351ed-af70-427b-9fbc-63c0a6d1ae3e.png)
+
+![tttt](https://user-images.githubusercontent.com/91766546/159177415-77a999c0-23ca-4175-bd54-ecd4400c066d.png)
+
+![ttttt](https://user-images.githubusercontent.com/91766546/159177420-970e9ca7-e92a-4162-a4e5-7523e44494ca.png)
+
+Deploy the three microservices (posts, threads, and users) to your cluster. Repeat these steps for each of your three microservices:
+
+- Navigate to the [Amazon ECS console](https://console.aws.amazon.com/ecs/home) and select **Clusters** from the left menu bar.
+- Select the cluster **BreakTheMonolith-Demo**, select the **Services** tab then select **Create**.
+
+![u](https://user-images.githubusercontent.com/91766546/159178455-4c6e3f43-6fd5-4893-a668-15ac590815b0.png)
+
+- On the **Configure service** page, edit the following parameters (and keep the default values for parameters not listed below):
+    - For the **Launch type**, select **EC2**.
+    - For the **Task Definition**, select the **Enter a value** button to automatically select the highest revision value.For example: api:1
+    - For the **Service name**, enter a service name (*posts, threads, or users*).
+    - For the **Number of tasks**, enter *1*
+
+![uu](https://user-images.githubusercontent.com/91766546/159178466-532ba8e9-9ebe-458a-9991-d9f0ddd55d96.png)
+
+- Select **Next step**.
+- On the **Configure network** page, **Load balancing** section, do the following:
+    - For the **Load balancer type**, select **Application Load Balancer**.
+![uuu](https://user-images.githubusercontent.com/91766546/159178491-0c043b59-727e-4ac7-bae7-5135cf2a649d.png)
+
+    - For the **Service IAM role**, select **BreakTheMonolith-Demo-ECSServiceRole**.
+    - For the **Load balancer name**, verify that **demo** is selected.
+    - In the **Container to load balance** section, select the **Add to load balancer** button and make the following edits:
+        - For the **Production listener port**, set to **80:HTTP**.
+        - For the **Target group name**, select the appropriate group: *(***posts**, **threads**, or **users**)
+- Select **Next step**.
+
+![uuuu](https://user-images.githubusercontent.com/91766546/159178502-a18617c0-4e14-46df-927d-0ce9845c8d06.png)
+
+- On the **Set Auto Scaling** page, select **Next step**.
+- On the **Review** page, select **Create Service**.
+![uuuuu](https://user-images.githubusercontent.com/91766546/159178511-9cb1c5a3-1d26-4a5a-98fa-707ae22665ef.png)
+
+- Select **View Service**.
+![uuuuuu](https://user-images.githubusercontent.com/91766546/159178532-0d26bd63-db37-4d4b-927a-d9ab7b85180d.png)
+
+![uuuuuuu](https://user-images.githubusercontent.com/91766546/159178612-c9bbc793-b6d8-4a01-8869-117dfd8a8b87.png)
+
+It should only take a few seconds for all your services to start. Double check that all services and tasks are running and active before you proceed.
+
+![uuuuuuuu](https://user-images.githubusercontent.com/91766546/159178618-eb6907b1-197c-44a0-8aa7-01bfc5c3448c.png)
+
+Your microservices are now running, but all traffic is still flowing to your monolith service. To reroute traffic to the microservices, take the following steps to update the listener rules:
+
+- Navigate to the [Load Balancers section of the EC2 Console](https://console.aws.amazon.com/ec2/v2/home?#LoadBalancers:).
+- Select the checkbox next to your load balancer to see the Load Balancer details.
+- Select the **Listeners** tab.There should only be one listener listed.
+- Under the **Rules** column, select **View/edit rules**.
+![uuuuuuuuu](https://user-images.githubusercontent.com/91766546/159178659-79bfea3b-90dd-442c-aea2-1298e117b311.png)
+
+- On the **Rules** page, select the minus (****) button from the top menu.
+- Delete the first rule (*/api* forwards to api*) by selecting the checkbox next to the rule.
+- Select **Delete**.
+
+![uuuuuuuuuu](https://user-images.githubusercontent.com/91766546/159178739-9be2d461-88dd-443c-9058-4d43327f7991.png)
+
+- Update the default rule to forward to drop-traffic:
+    - Select the edit (pencil) button from the top menu.
+    - Select the edit (pencil) icon next to the default rule (**HTTP 80: default action**).
+    - Selec the edit (pencil) icon in the **THEN** column to edit the **Forward to**.
+    - In the **Target group** field, select **drop-traffic**.
+    - Select the **Update** button.
+
+![uuuuuuuuuuu](https://user-images.githubusercontent.com/91766546/159178755-5460982b-9a62-4010-8ec5-290a1659a7d0.png)
+
+![uuuuuuuuuuuu](https://user-images.githubusercontent.com/91766546/159178768-8faf3320-aa99-47fb-bd1f-00788479d9ef.png)
+
+
+![uuuuuuuuuuuuu](https://user-images.githubusercontent.com/91766546/159178785-486b7a52-23ea-468b-b06c-bfbe3a4ad510.png)
+
+![uuuuuuuuuuuuuu](https://user-images.githubusercontent.com/91766546/159178792-e3b4d34a-bbe3-4356-95ca-52ff31583c9f.png)
+
+**Disable the monolith:** With traffic now flowing to your microservices, you can disable the monolith service.
+
+- Navigate back to the Amazon ECS cluster **BreakTheMonolith-Demo-ECSCluster**.
+- In the **Services** tab, select the checkbox next to **api** and select **Update**.
+- On the **Configure service** page, locate **Number of tasks** and enter *0*.
+![Screenshot from 2022-03-12 01-10-03](https://user-images.githubusercontent.com/91766546/159178883-3421ef23-a37b-49a6-8c8e-e2525216f951.png)
+![Screenshot from 2022-03-12 01-10-46](https://user-images.githubusercontent.com/91766546/159178899-37ca6ea9-22e0-4aeb-aeb7-4c2d90f4940f.png)
+
+- Select **Skip to review**.
+- Select **Update Service**.
+
+![Screenshot from 2022-03-12 01-11-17](https://user-images.githubusercontent.com/91766546/159178911-c2bf9568-7fc9-4197-ae60-fc2a88d2d597.png)
+
+See the values for each microservice:  To see each service, simply add the service name to the end of your DNS name:
+
+http://[DNS name]/api/users
+
+![aa](https://user-images.githubusercontent.com/91766546/159178988-a6848268-9dc6-4f88-8594-0719d6d65285.png)
+
+![aaaa](https://user-images.githubusercontent.com/91766546/159178995-b12df555-2f30-4a0c-911f-5b3adf85a699.png)
+
+![aaaaa](https://user-images.githubusercontent.com/91766546/159179006-6f503781-fc36-41ca-ab45-646777694c32.png)
+
+
+## Module Five - Clean Up
+
+In this module, I will terminate the resources I created during this project. I will stop the services running on Amazon ECS, delete the ALB, and delete the AWS CloudFormation stack to terminate the ECS cluster, including all underlying EC2 instances.
+
+Start clean up by deleting each of the services (posts, threads, and users) that are running in my cluster:
+
+Navigate to the Amazon ECS console and select Clusters.
+- In the **Services** tab, select a service and then select **Delete**.
+- Confirm the deletion.
+- Repeat the steps until all the services are deleted.
+
+Before proceeding to the next step, you nned to either wait for all running tasks to terminate or select the **Tasks** tab and select **Stop All**.
+
+Repeat these steps for each of your services on the cluster.
+![d](https://user-images.githubusercontent.com/91766546/159179737-7dc7da42-d7cd-4f8f-9fa9-07ed9dd9d523.png)
+![dd](https://user-images.githubusercontent.com/91766546/159179743-b724312e-2cb0-4eaa-a8dc-f2e5fb7b9a1a.png)
+![ddd](https://user-images.githubusercontent.com/91766546/159179751-84d682fc-3d00-4741-b870-17b4d90814e7.png)
+
+Navigate to the [Load Balancer section of the EC2 Console.](https://console.aws.amazon.com/ec2/v2/home?#LoadBalancers:). Select the **Listeners** tab.
+![dddd](https://user-images.githubusercontent.com/91766546/159179847-01391aae-ab88-47a4-99b8-469b1434a30d.png)
+
+- Select the listener, then select **Delete**.
+![ddddd](https://user-images.githubusercontent.com/91766546/159179860-0fb75a11-3a2c-4ec3-bf70-ccc8b8e562c7.png)
+
+- Confirm the deletion.Navigate to [Target Groups](https://console.aws.amazon.com/ec2/v2/home?#TargetGroups:) in the EC2 console.Check the checkbox at the top of the list (next to **Name**) to select all target groups.Select **Actions** then select **Delete**.Confirm the deletion.
+![dddddd](https://user-images.githubusercontent.com/91766546/159179874-7e83fa65-67d0-4643-a2e8-b8a5aef5838d.png)
+![ddddddd](https://user-images.githubusercontent.com/91766546/159179900-0ba547f0-81b7-484b-a670-593ac3ccd372.png)
+
+Navigate to the [AWS CloudFormation console](https://console.aws.amazon.com/cloudformation/home?).
+
+- Check the box next to the Cloudformation stack **BreakTheMonolith-Demo**.
+- Select **Actions** then select **Delete Stack**.
+- Confirm the deletion.
+- The stack status should change to DELETE_IN_PROGRESS*.*
+
+**⚠** **WARNING!** Leaving a stack running will result in charges on your AWS account.
+
+![dddddddd](https://user-images.githubusercontent.com/91766546/159179959-db5319b0-f994-4d09-8428-fd27dae37416.png)
+
+![ddddddddd](https://user-images.githubusercontent.com/91766546/159179969-c1ecb1f4-7a68-4cf1-af10-eb1fe59646a4.png)
+
+Navigate to [Task Definitions](https://console.aws.amazon.com/ecs/home?#/taskDefinitions) in the Amazon ECR console.
+
+- Select a task definition (api, posts, threads, or users).
+- On the **Task Definition Name** page, select the checkbox next to the task name.
+- Select **Actions** then from the drop-down list select **Deregister**.
+- Confirm your action.
+
+Repeat these steps for all four task definitions.
+
+Navigate to [Repositories](https://console.aws.amazon.com/ecs/home?#/repositories) in the Amazon ECR console.
+
+- Select the checkbox next to a repository and then select **Delete**.
+- Confirm the deletion.
+- Repeat the steps until all the repositories are deleted.
+
+![dddddddddd](https://user-images.githubusercontent.com/91766546/159180080-47f3882e-1ac8-440e-a18e-959cf714ae02.png)
+![ddddddddddd](https://user-images.githubusercontent.com/91766546/159180092-c518751e-8f26-4f05-930e-6eb4bac5c9c2.png)
+
+
+## Congratulations!!! You completed the project and split a monolithic app into containerized microservices using Amazon Web Services (AWS).
