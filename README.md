@@ -323,7 +323,132 @@ Add a Listener to the ALB
 
 Navigate to the Load Balancer section of the EC2 Console.
 
+- Select the **Listeners** tab.
+- Select **Add listener** and edit the following parameters as needed:
+    - For **Protocol:port**, select **HTTP** and enter *80*.
+    - For **Default action(s)**, select **Forward to** and in the **Target group** field, enter *api*.
+- Select **Save**.
+
 ![ll](https://user-images.githubusercontent.com/91766546/159141391-8c7b4062-8926-4833-9e11-4aee32361d7e.png)
 
 
 ![l](https://user-images.githubusercontent.com/91766546/159141370-4e380d9e-fb6f-49bd-92d0-8da037d39215.png)
+
+
+![lll](https://user-images.githubusercontent.com/91766546/159161691-9e01b718-d198-4abb-9a99-542778850f90.png)
+
+Deploy the monolith as a service into the cluster, follow these steps.
+
+Navigate to the Amazon ECS console and select Clusters from the left menu bar.
+![llll](https://user-images.githubusercontent.com/91766546/159161995-ce51ae08-d643-46e0-8601-2ff14fff9fcc.png)
+
+- Select the cluster **BreakTheMonolith-Demo**, select the **Services** tab then select **Create**.
+- On the **Configure service** page, edit the following parameters (and keep the default values for parameters not listed below):
+    - For the **Launch type**, select **EC2**.
+    - For the **Service name**, enter *api*.
+    - For the **Number of tasks**, enter *1*.
+    - Select **Next step**.
+
+![lllll](https://user-images.githubusercontent.com/91766546/159162087-ff57501b-920b-4dda-98f0-b2d5c89d1eae.png)
+
+
+- On the **Configure network** page, **Load balancing** section, select **Application Load Balancer**.Additional parameters will apear: **Service IAM role** and **Load balancer name**.
+    - For the **Service IAM role**, select BreakTheMonolith-Demo-ECSServiceRole.
+    - For the **Load balancer name**, verify that **demo** is selected.
+
+![llllll](https://user-images.githubusercontent.com/91766546/159162123-72c0d1ff-8909-44c1-9bdf-ef3328beb0dd.png)
+
+![lllllll](https://user-images.githubusercontent.com/91766546/159162172-12a388d7-c654-426c-81ad-7ba61875ecf6.png)
+
+- In the **Container to load balance** section, select **Add to load balancer**.Additional information labeled **api:3000** is shown.
+- In the **api:3000** section, do the following:
+    - For the **Production listener port** field, select **80:HTTP**.
+    - For the **Target group name**, select your group: **api**.
+    - Select **Next step**.
+![x](https://user-images.githubusercontent.com/91766546/159162437-bd2754f9-b53d-471b-88ca-efa7d69295e7.png)
+
+- On the **Set Auto Scaling** page, leave the default setting and select **Next step**.
+- On the **Review** page, review the settings then select **Create Service**.
+- After the service has been created, select **View Service**.
+
+![xx](https://user-images.githubusercontent.com/91766546/159162764-42991018-ce54-4ebd-98b6-27bebc3c55b2.png)
+![xxx](https://user-images.githubusercontent.com/91766546/159162786-c7edf81d-331c-4be6-ad59-2367e4380ce2.png)
+![xxxx](https://user-images.githubusercontent.com/91766546/159162796-3ea57203-94ab-45ab-810b-d350e2b07007.png)
+![xxxxx](https://user-images.githubusercontent.com/91766546/159162800-56f98650-39cc-4479-8a21-30e56e6def58.png)
+![xxxxxx](https://user-images.githubusercontent.com/91766546/159162805-e2440562-4c9c-4ee1-9373-ade336825e06.png)
+
+You now have a running service. It may take a minute for the container to register as healthy and begin receiving traffic.
+
+Validate your deployment by checking if the service is available from the internet and pinging it.
+**To Find your Service URL:**
+
+- Navigate to the [Load Balancers](https://console.aws.amazon.com/ec2/v2/home?#LoadBalancers:) section of the EC2 Console.
+- Select your load balancer **demo**.
+- In the **Description** tab, copy the DNS name and paste into a new browser tab or window.
+- You should see the message **Ready to receive requests**.
+
+![Screenshot from 2022-03-11 23-01-22](https://user-images.githubusercontent.com/91766546/159163231-c4aaabf9-6e87-4add-af7c-642ad4628d19.png)
+
+![a](https://user-images.githubusercontent.com/91766546/159163263-48672c37-e221-4104-a0d3-fa8f1da55418.png)
+
+ee Each Part of the Service: The node.js application routes traffic to each worker based on the URL. To see a worker, simply add the worker name api/[worker-name] to the end of the DNS Name as follows:
+
+- http://*[DNS name]*/api/users
+- http://*[DNS name]*/api/threads
+- http://*[DNS name]*/api/posts
+
+![aa](https://user-images.githubusercontent.com/91766546/159163370-ba672631-55ef-4c77-b5ec-a3e7fb9408f4.png)
+
+You can also add a record number at the end of the URL to drill down to a particular record. For example: http://[DNS name]/api/posts/1 or http://[DNS name]/api/users/4
+
+![aaa](https://user-images.githubusercontent.com/91766546/159163384-75fb51ca-3ba4-44e4-9c59-b706a19286fa.png)
+
+![aaaa](https://user-images.githubusercontent.com/91766546/159163388-434ccf9d-5423-4c22-98c6-d008773d30ec.png)
+
+![aaaaa](https://user-images.githubusercontent.com/91766546/159163396-f1c8988e-b01c-4c76-8e1b-592db8cc47b6.png)
+
+## Module 3 - Break the Monolith
+
+In this module, I will break the node.js application into several interconnected services and push each service's image to an Amazon Elastic Container Registry (Amazon ECR) repository.
+
+### Architecture Overview
+The final application architecture uses Amazon Elastic Container Service (Amazon ECS) and the Application Load Balancer (ALB).
+
+![w](https://user-images.githubusercontent.com/91766546/159163659-ce17ef50-bec8-4edf-9c94-3cb97c6ae4d4.png)
+
+a. Client: The client makes traffic requests over port 80.
+
+b. Load Balancer: The ALB routes external traffic to the correct service. The ALB inspects the client request and uses the routing rules to direct the request to an instance and port for the target group matching the rule.
+
+c. Target Groups: Each service has a target group that keeps track of the instances and ports of each container running for that service.
+
+d. Microservices: Amazon ECS deploys each service into a container across an EC2 cluster. Each container only handles a single feature.
+
+### Why Microservices?
+
+There are several reasons why companies nowadays implement microservices:
+
+Isolation of Crashes: Good microservice architecture means that if one micro piece of your service is crashing, then only that part of your service will go down. The rest of your service can continue to work properly.
+
+Isolation for Security: When microservice best practices are followed, the result is that if an attacker compromises one service, they only gain access to the resources of that service, and cannot horizontally access other resources from other services without breaking into those services as well.
+
+Independent Scaling: When features are broken out into microservices, then the amount of infrastructure and number of instances used by each microservice class can be scaled up and down independently.
+
+Development Velocity: Developers can be confident that any code they write will actually not be able to impact the existing code at all unless they explicitly write a connection between two microservices.
+
+### Implementation Instructions
+
+In the previous modules, I deployed my application as a monolith using a single service and a single container image repository. In this module, I will break the monolith, meaning I will deploy the application as three microservices, therefore I will need to provision three repositories (one for each service) in Amazon ECR.
+
+The three services are:
+
+1. users
+2. threads
+3. posts
+
+Let's create repository for each service in Amazon ECR.
+
+![ww](https://user-images.githubusercontent.com/91766546/159164332-01bdb185-994c-43ad-8b26-5c9cb9d266c9.png)
+
+![www](https://user-images.githubusercontent.com/91766546/159164336-4af24616-58ec-4502-ba15-f2ab7c5c3faf.png)
+
